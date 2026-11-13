@@ -1,0 +1,54 @@
+
+# ==============================
+# Web Framework
+# ==============================
+fastapi
+uvicorn[standard]
+
+# ==============================
+# Database
+# ==============================
+sqlalchemy[asyncio]
+psycopg[binary]
+alembic
+
+# ==============================
+# Validation & Configuration
+# ==============================
+pydantic
+pydantic-settings
+python-dotenv
+python-multipart
+email-validator
+
+# ==============================
+# Authentication & Security
+# ==============================
+argon2-cffi
+PyJWT[crypto]
+
+# ==============================
+# Media Storage
+# ==============================
+cloudinary
+
+# ==============================
+# HTTP Client
+# ==============================
+httpx
+
+# ==============================
+# AI Integration
+# ==============================
+openai
+
+# ==============================
+# Rate Limiting
+# ==============================
+slowapi
+
+# ==============================
+# Testing
+# ==============================
+pytest
+pytest-asyncio
