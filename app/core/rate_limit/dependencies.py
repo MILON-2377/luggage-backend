@@ -1,0 +1,82 @@
+import math
+from collections.abc import Callable
+
+from fastapi import HTTPException, Request, Response, status
+
+from app.core.rate_limit.client_identity import get_client_ip
+from app.core.rate_limit.policies import (
+    RateLimitPolicyName,
+    get_rate_limit_policy,
+)
+from app.integrations.redis.client import redis_manager
+from app.integrations.redis.rate_limit_storage import RedisRateLimitStorage
+from app.integrations.redis.token_bucket_executor import RedisTokenBucketExecutor
+
+_storage = RedisRateLimitStorage(RedisTokenBucketExecutor(redis_manager))
+
+def _build_rate_limit_headers(
+    *,
+    limit: int,
+    remaining_tokens: float,
+    reset_after: float,
+    retry_after: float | None = None,
+) -> dict[str, str]:
+    headers = {
+        "X-RateLimit-Limit": str(limit),
+        "X-RateLimit-Remaining": str(
+            max(0, math.floor(remaining_tokens + 1e-9))
+        ),
+        "X-RateLimit-Reset": str(max(0, math.ceil(reset_after))),
+    }
+
+    if retry_after is not None:
+        headers["Retry-After"] = str(max(1, math.ceil(retry_after)))
+
+    return headers
+
+
+def rate_limit(
+    policy_name: RateLimitPolicyName,
+    *,
+    cost: float = 1.0,
+) -> Callable:
+    policy = get_rate_limit_policy(policy_name)
+
+    if cost <= 0 or cost > policy.capacity:
+        raise ValueError(
+            "Rate limit cost must be positive and cannot exceed capacity."
+        )
+
+    async def dependency(
+        request: Request,
+        response: Response,
+    ) -> None:
+        client_ip = get_client_ip(request)
+        key = f"{policy.name.value}:{client_ip}"
+
+        decision = await _storage.consume(
+            key=key,
+            capacity=policy.capacity,
+            refill_rate=policy.refill_rate,
+            cost=cost,
+        )
+
+        headers = _build_rate_limit_headers(
+            limit=decision.limit,
+            remaining_tokens=decision.remaining_tokens,
+            reset_after=decision.reset_after,
+            retry_after=(
+                decision.retry_after if not decision.allowed else None
+            ),
+        )
+
+        if not decision.allowed:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Too many requests. Please try again later.",
+                headers=headers,
+            )
+
+        response.headers.update(headers)
+
+    return dependency
