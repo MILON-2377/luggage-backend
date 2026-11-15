@@ -1,60 +1,39 @@
-
-# ==============================
 # Web Framework
-# ==============================
 fastapi
 uvicorn[standard]
 
-# ==============================
 # Database
-# ==============================
 sqlalchemy[asyncio]
 psycopg[binary]
 alembic
 
-# ==============================
 # Validation & Configuration
-# ==============================
 pydantic
 pydantic-settings
 python-dotenv
 python-multipart
 email-validator
 
-# ==============================
 # Authentication & Security
-# ==============================
-argon2-cffi
+pwdlib[argon2]
 PyJWT[crypto]
+pyotp
+webauthn
+cryptography
 
-# ==============================
 # Media Storage
-# ==============================
 cloudinary
 
-# ==============================
 # HTTP Client
-# ==============================
 httpx
 
-# ==============================
 # AI Integration
-# ==============================
 openai
 
-# ==============================
 # Rate Limiting
-# ==============================
 slowapi
+redis[hiredis]
 
-# ==============================
 # Testing
-# ==============================
 pytest
 pytest-asyncio
-
-
-# =============================
-# Redis
-# =============================
-redis[hiredis]
