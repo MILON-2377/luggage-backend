@@ -47,12 +47,25 @@ class Settings(BaseSettings):
     BREVO_API_KEY: SecretStr
     EMAIL_FROM_ADDRESS: str
     EMAIL_FROM_NAME: str
+    BREVO_API_URL: str = "https://api.brevo.com/v3/smtp/email"
+    EMAIL_MAX_ATTEMPTS: int = Field(default=3, ge=1, le=10)
+    EMAIL_REQUEST_TIMEOUT: float = Field(default=10.0, gt=0, le=60)
+    EMAIL_RETRY_BACKOFF_SECONDS: tuple[float, ...] = (0.5, 1.0, 2.0)
+    EMAIL_MAX_RETRY_AFTER_SECONDS: float
 
     # WebAuthn / Passkeys
     WEBAUTHN_RP_ID: str
     WEBAUTHN_RP_NAME: str
     WEBAUTHN_EXPECTED_ORIGIN: str
     WEBAUTHN_CHALLENGE_EXPIRE_SECONDS: int = Field(default=300, gt=0)
+
+    # Invitations
+    INVITATION_EXPIRE_HOURS: int = Field(default=24, ge=1, le=24 * 14)
+    INVITATION_MAX_ATTEMPTS: int = Field(default=5, ge=1, le=20)
+
+    # Authentication
+    FRONTEND_BASE_URL: str
+    INVITATION_ACCEPTANCE_PATH: str = "/accept-invitation"
 
 
 settings = Settings()

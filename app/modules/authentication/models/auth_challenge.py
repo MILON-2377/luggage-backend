@@ -1,4 +1,3 @@
-
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -51,13 +50,13 @@ class AuthChallenge(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         nullable=False,
     )
 
-    # Store an HMAC-SHA256 hex digest, never the raw token or OTP.
+    # SHA-256 hex digest of a high-entropy random challenge token.
     challenge_token_hash: Mapped[str] = mapped_column(
         String(64),
         nullable=False,
     )
 
-    # Store non-sensitive challenge metadata only.
+    # Non-sensitive metadata only. Never store raw secrets or tokens here.
     challenge_data: Mapped[dict[str, Any] | None] = mapped_column(
         JSONB,
         nullable=True,
@@ -107,6 +106,10 @@ class AuthChallenge(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         Index(
             "ix_auth_challenges_expires_at",
             "expires_at",
+        ),
+        CheckConstraint(
+            "char_length(challenge_token_hash) = 64",
+            name="ck_auth_challenges_token_hash_length",
         ),
         CheckConstraint(
             "failed_attempts >= 0",

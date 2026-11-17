@@ -26,6 +26,9 @@ from app.modules.notification.enums import (
 
 if TYPE_CHECKING:
     from app.modules.authentication.models.admin_user import AdminUser
+    from app.modules.notification.models.notification_recipient import (
+        NotificationRecipient,
+    )
 
 
 class Notification(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -125,6 +128,14 @@ class Notification(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     creator: Mapped["AdminUser | None"] = relationship(
         "AdminUser",
         foreign_keys=[created_by],
+        lazy="raise",
+    )
+
+    recipients: Mapped[list["NotificationRecipient"]] = relationship(
+        "NotificationRecipient",
+        back_populates="notification",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
         lazy="raise",
     )
 

@@ -88,11 +88,15 @@ class AdminUserProfile(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     admin_user: Mapped["AdminUser"] = relationship(
         "AdminUser",
+        back_populates="profile",
+        foreign_keys=[admin_user_id],
         lazy="raise",
     )
 
     avatar_media: Mapped["MediaAsset | None"] = relationship(
         "MediaAsset",
+        back_populates="avatar_profiles",
+        foreign_keys=[avatar_media_id],
         lazy="raise",
     )
 

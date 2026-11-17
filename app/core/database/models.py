@@ -11,17 +11,29 @@ from app.modules.authentication.models import (
     RolePermission,
     UserRole,
 )
+from app.modules.media.models import MediaAsset, MediaFile, MediaStorageLocation
+from app.modules.notification.models import (
+    EmailOutbox,
+    Notification,
+    NotificationRecipient,
+)
 
 __all__ = [
     "AdminSession",
-    "AdminUser",
     "AdminTotpCredential",
+    "AdminUser",
+    "AdminUserProfile",
     "AdminWebauthnCredential",
     "AuthChallenge",
     "AuthRecoveryCode",
+    "MediaAsset",
+    "MediaFile",
+    "MediaStorageLocation",
     "Permission",
     "Role",
     "RolePermission",
     "UserRole",
-    "AdminUserProfile",
+    "NotificationRecipient",
+    "Notification",
+    "EmailOutbox",
 ]

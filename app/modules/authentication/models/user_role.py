@@ -53,7 +53,7 @@ class UserRole(Base):
 
     admin_user: Mapped["AdminUser"] = relationship(
         "AdminUser",
-        foreign_keys=[admin_user_id],
+        foreign_keys="UserRole.admin_user_id",
         lazy="raise",
     )
 
@@ -64,7 +64,7 @@ class UserRole(Base):
 
     assigned_by_user: Mapped["AdminUser | None"] = relationship(
         "AdminUser",
-        foreign_keys=[assigned_by],
+        foreign_keys="UserRole.assigned_by",
         lazy="raise",
     )
 

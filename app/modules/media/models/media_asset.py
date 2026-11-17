@@ -1,4 +1,3 @@
-
 import uuid
 from typing import TYPE_CHECKING
 
@@ -24,6 +23,8 @@ from app.modules.media.enums import MediaStatus, MediaType
 
 if TYPE_CHECKING:
     from app.modules.authentication.models.admin_user import AdminUser
+    from app.modules.authentication.models.admin_user_profile import AdminUserProfile
+    from app.modules.media.models.media_file import MediaFile
 
 
 class MediaAsset(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
@@ -98,6 +99,24 @@ class MediaAsset(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         lazy="raise",
     )
 
+    avatar_profiles: Mapped[list["AdminUserProfile"]] = relationship(
+        "AdminUserProfile",
+        back_populates="avatar_media",
+        foreign_keys="AdminUserProfile.avatar_media_id",
+        passive_deletes=True,
+        lazy="raise",
+    )
+
+    # DB-level ON DELETE CASCADE does the work; passive_deletes stops the ORM
+    # from loading every file just to delete it.
+    files: Mapped[list["MediaFile"]] = relationship(
+        "MediaFile",
+        back_populates="media_asset",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="raise",
+    )
+
     __table_args__ = (
         Index(
             "ix_media_assets_uploaded_by",
@@ -118,10 +137,20 @@ class MediaAsset(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
             "length(trim(original_filename)) > 0",
             name="ck_media_assets_original_filename_not_blank",
         ),
+        # Status and deleted_at are two signals for deletion; a deletion
+        # status without a timestamp would be inconsistent.
+        CheckConstraint(
+            "status NOT IN ('deletion_pending', 'deleted') OR deleted_at IS NOT NULL",
+            name="ck_media_assets_deletion_status_requires_deleted_at",
+        ),
     )
 
-    @validates("original_filename", "display_name", "title", "alt_text")
-    def _strip_text(self, _key: str, value: str | None) -> str | None:
+    @validates("original_filename")
+    def _strip_original_filename(self, _key: str, value: str) -> str:
+        return value.strip()
+
+    @validates("display_name", "title", "alt_text", "description")
+    def _strip_optional(self, _key: str, value: str | None) -> str | None:
         if value is None:
             return None
-        return value.strip()
+        return value.strip() or None

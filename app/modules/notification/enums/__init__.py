@@ -1,3 +1,4 @@
+from .email_outbox_status import EmailOutboxStatus
 from .notification_channel import NotificationChannel
 from .notification_delivery_status import NotificationDeliveryStatus
 from .notification_priority import NotificationPriority
@@ -10,4 +11,5 @@ __all__ = [
     "NotificationPriority",
     "NotificationStatus",
     "NotificationType",
+    "EmailOutboxStatus",
 ]

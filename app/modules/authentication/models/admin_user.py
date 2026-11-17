@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    Boolean,
     CheckConstraint,
     DateTime,
     Enum,
@@ -10,7 +10,7 @@ from sqlalchemy import (
     String,
     text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, validates
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.core.database.base import Base
 from app.core.database.mixins import (
@@ -19,6 +19,9 @@ from app.core.database.mixins import (
     UUIDPrimaryKeyMixin,
 )
 from app.modules.authentication.enums import AdminUserStatus
+
+if TYPE_CHECKING:
+    from app.modules.authentication.models.admin_user_profile import AdminUserProfile
 
 
 class AdminUser(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
@@ -31,7 +34,7 @@ class AdminUser(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
 
     password_hash: Mapped[str | None] = mapped_column(
         String(255),
-        nullable=False,
+        nullable=True,
     )
 
     status: Mapped[AdminUserStatus] = mapped_column(
@@ -46,13 +49,6 @@ class AdminUser(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         ),
         default=AdminUserStatus.INVITED,
         server_default=AdminUserStatus.INVITED.value,
-        nullable=False,
-    )
-
-    is_super_admin: Mapped[bool] = mapped_column(
-        Boolean,
-        default=False,
-        server_default=text("false"),
         nullable=False,
     )
 
@@ -83,9 +79,13 @@ class AdminUser(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         nullable=True,
     )
 
-    deleted_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
+    profile: Mapped["AdminUserProfile | None"] = relationship(
+        "AdminUserProfile",
+        back_populates="admin_user",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="raise",
     )
 
     __table_args__ = (

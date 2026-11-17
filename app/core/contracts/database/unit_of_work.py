@@ -1,9 +1,28 @@
 from abc import ABC, abstractmethod
 from types import TracebackType
-from typing import Any, Self
+from typing import Any, Self, TypeVar
+
+from app.core.contracts.database.repository import AbstractRepository
+
+RepositoryT = TypeVar("RepositoryT", bound=AbstractRepository)
 
 
 class AbstractUnitOfWork(ABC):
+    @abstractmethod
+    def register_repository(
+        self,
+        repository_type: type[RepositoryT],
+        repository: RepositoryT,
+    ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_repository(
+        self,
+        repository_type: type[RepositoryT],
+    ) -> RepositoryT:
+        raise NotImplementedError
+
     @abstractmethod
     async def flush(self) -> None:
         raise NotImplementedError

@@ -1,4 +1,3 @@
-
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -70,9 +69,11 @@ class AuthRecoveryCode(UUIDPrimaryKeyMixin, Base):
         Index(
             "ix_auth_recovery_codes_available_by_user",
             "admin_user_id",
-            postgresql_where=text(
-                "used_at IS NULL AND revoked_at IS NULL"
-            ),
+            postgresql_where=text("used_at IS NULL AND revoked_at IS NULL"),
+        ),
+        CheckConstraint(
+            "char_length(code_hash) = 64",
+            name="ck_auth_recovery_codes_hash_length",
         ),
         CheckConstraint(
             "used_at IS NULL OR revoked_at IS NULL",

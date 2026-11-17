@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <body style="font-family: Arial, sans-serif; color: #1a1a1a; line-height: 1.5;">
+    <p>An administrator has invited you to join {{ app_name }}.</p>
+    <p>Use the button below to complete your account setup.</p>
+    <p>
+      <a href="{{ invitation_url }}"
+         style="display: inline-block; padding: 10px 18px; background: #1d4ed8;
+                color: #ffffff; text-decoration: none; border-radius: 4px;">
+        Accept invitation
+      </a>
+    </p>
+    <p>If the button does not work, copy this link into your browser:<br>
+      <a href="{{ invitation_url }}">{{ invitation_url }}</a>
+    </p>
+    <p>This link expires in {{ expires_in_hours }} hours and was sent to {{ recipient_email }}.</p>
+    <p>If you were not expecting this invitation, you can ignore this email.</p>
+  </body>
+</html>

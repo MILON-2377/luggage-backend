@@ -1,4 +1,3 @@
-
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -50,7 +49,7 @@ class Role(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             unique=True,
         ),
         CheckConstraint(
-            "slug = lower(slug) AND slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'",
+            "slug = lower(slug) AND slug ~ '^[a-z0-9]+([-_][a-z0-9]+)*$'",
             name="ck_roles_slug_format",
         ),
         CheckConstraint(

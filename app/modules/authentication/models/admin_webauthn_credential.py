@@ -23,7 +23,11 @@ if TYPE_CHECKING:
     from app.modules.authentication.models.admin_user import AdminUser
 
 
-class AdminWebauthnCredential(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class AdminWebauthnCredential(
+    UUIDPrimaryKeyMixin,
+    TimestampMixin,
+    Base,
+):
     __tablename__ = "admin_webauthn_credentials"
 
     admin_user_id: Mapped[uuid.UUID] = mapped_column(
@@ -115,8 +119,12 @@ class AdminWebauthnCredential(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             name="ck_admin_webauthn_credentials_sign_count_non_negative",
         ),
         CheckConstraint(
-            "octet_length(credential_id) BETWEEN 16 AND 1023",
+            "octet_length(credential_id) BETWEEN 1 AND 1023",
             name="ck_admin_webauthn_credentials_credential_id_length",
+        ),
+        CheckConstraint(
+            "octet_length(public_key) > 0",
+            name="ck_admin_webauthn_credentials_public_key_not_empty",
         ),
         CheckConstraint(
             "backup_state = false OR backup_eligible = true",

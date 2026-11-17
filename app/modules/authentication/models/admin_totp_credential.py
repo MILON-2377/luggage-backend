@@ -114,4 +114,8 @@ class AdminTotpCredential(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             "last_used_at IS NULL OR verified_at IS NOT NULL",
             name="ck_admin_totp_credentials_used_requires_verified",
         ),
+        CheckConstraint(
+            "revoked_at IS NULL OR verified_at IS NOT NULL",
+            name="ck_admin_totp_credentials_revoked_requires_verified",
+        ),
     )

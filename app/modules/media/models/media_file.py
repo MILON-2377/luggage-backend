@@ -14,6 +14,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Uuid,
+    func,
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
@@ -24,6 +25,7 @@ from app.modules.media.enums import MediaFileRole
 
 if TYPE_CHECKING:
     from app.modules.media.models.media_asset import MediaAsset
+    from app.modules.media.models.media_storage_location import MediaStorageLocation
 
 
 class MediaFile(UUIDPrimaryKeyMixin, Base):
@@ -89,12 +91,20 @@ class MediaFile(UUIDPrimaryKeyMixin, Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=text("CURRENT_TIMESTAMP"),
+        server_default=func.now(),
         nullable=False,
     )
 
     media_asset: Mapped["MediaAsset"] = relationship(
         "MediaAsset",
+        back_populates="files",
+        lazy="raise",
+    )
+
+    storage_locations: Mapped[list["MediaStorageLocation"]] = relationship(
+        "MediaStorageLocation",
+        back_populates="media_file",
+        passive_deletes="all",
         lazy="raise",
     )
 

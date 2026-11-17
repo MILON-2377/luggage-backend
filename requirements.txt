@@ -37,3 +37,7 @@ redis[hiredis]
 # Testing
 pytest
 pytest-asyncio
+
+
+# JinJa2
+jinja2
