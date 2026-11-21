@@ -1,5 +1,6 @@
 import uuid
 from abc import abstractmethod
+from datetime import datetime
 
 from app.core.contracts.database.repository import AbstractRepository
 from app.modules.authentication.models.auth_recovery_code import AuthRecoveryCode
@@ -27,4 +28,12 @@ class AbstractAuthRecoveryCodeRepository(AbstractRepository):
 
     @abstractmethod
     def create(self, recovery_code: AuthRecoveryCode) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def revoke_all_available_by_admin_user_id(
+        self,
+        admin_user_id: uuid.UUID,
+        revoked_at: datetime,
+    ) -> int:
         raise NotImplementedError

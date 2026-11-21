@@ -1,3 +1,4 @@
+import uuid
 from abc import abstractmethod
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -30,4 +31,30 @@ class AbstractEmailOutboxRepository(AbstractRepository):
         *,
         for_update: bool = False,
     ) -> "EmailOutbox | None":
+        raise NotImplementedError
+
+    @abstractmethod
+    async def mark_sent(
+        self,
+        email_outbox_id: uuid.UUID,
+        sent_at: datetime,
+    ) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def mark_retry(
+        self,
+        email_outbox_id: uuid.UUID,
+        next_attempt_at: datetime,
+        error: str,
+    ) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def mark_failed(
+        self,
+        email_outbox_id: uuid.UUID,
+        error: str,
+        failed_at: datetime,
+    ) -> bool:
         raise NotImplementedError

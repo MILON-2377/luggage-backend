@@ -8,7 +8,12 @@ from app.modules.notification.repositories import EmailOutboxRepository
 def register_notification_repositories(uow: AbstractUnitOfWork) -> None:
     session = uow.session
 
-    repositories = (AbstractEmailOutboxRepository, EmailOutboxRepository)
+    repositories = (
+        (
+            AbstractEmailOutboxRepository,
+            EmailOutboxRepository,
+        ),
+    )
 
     for contract, implementation in repositories:
         uow.register_repository(contract, implementation(session))

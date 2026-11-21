@@ -1,4 +1,6 @@
 import hashlib
+import hmac
+from datetime import UTC, datetime
 
 import pyotp
 
@@ -47,3 +49,32 @@ class PyOTPProvider(TOTPProvider):
             code,
             valid_window=valid_window,
         )
+
+    def verify_code_for_time_step(
+        self,
+        secret: str,
+        code: str,
+        time_step: int,
+        period_seconds: int,
+    ) -> bool:
+        if not code.isdigit() or len(code) != 6:
+            return False
+
+        if time_step < 0 or period_seconds <= 0:
+            return False
+
+        totp = pyotp.TOTP(
+            secret,
+            digits=6,
+            interval=period_seconds,
+            digest=hashlib.sha1,
+        )
+
+        step_time = datetime.fromtimestamp(
+            time_step * period_seconds,
+            tz=UTC,
+        )
+
+        expected_code = totp.at(step_time)
+
+        return hmac.compare_digest(expected_code, code)

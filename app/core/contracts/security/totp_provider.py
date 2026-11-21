@@ -23,3 +23,13 @@ class TOTPProvider(ABC):
         valid_window: int = 0,
     ) -> bool:
         raise NotImplementedError
+
+    @abstractmethod
+    def verify_code_for_time_step(
+        self,
+        secret: str,
+        code: str,
+        time_step: int,
+        period_seconds: int,
+    ) -> bool:
+        raise NotImplementedError

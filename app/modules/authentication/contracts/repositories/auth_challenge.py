@@ -40,3 +40,18 @@ class AbstractAuthChallengeRepository(AbstractRepository):
         consumed_at: datetime,
     ) -> int:
         raise NotImplementedError
+
+    @abstractmethod
+    async def consume(
+        self,
+        challenge_id: uuid.UUID,
+        now: datetime,
+    ) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def increment_failed_attempts(
+        self,
+        challenge_id: uuid.UUID,
+    ) -> int | None:
+        raise NotImplementedError

@@ -105,7 +105,7 @@ class InvitationAcceptanceService(AbstractInvitationAcceptanceService):
         admin_user.password_hash = password_hash
         admin_user.password_changed_at = now
         admin_user.email_verified_at = now
-        admin_user.status = AdminUserStatus.ACTIVE
+        admin_user.status = AdminUserStatus.PENDING_MFA_SETUP
 
         profile.first_name = first_name
         profile.last_name = last_name

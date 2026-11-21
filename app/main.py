@@ -2,8 +2,10 @@ import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import FastAPI
 
+import app.core.database.models
 from app.api.router import api_router
 from app.core.config import settings
 from app.core.errors.error_handlers import register_error_handlers
@@ -19,25 +21,22 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
-    """
-    Manage application startup and graceful shutdown.
-    """
-
     logger.info("Starting application: %s", settings.APP_NAME)
 
-    try:
+    async with httpx.AsyncClient() as http_client:
+        application.state.http_client = http_client
 
-        await redis_manager.connect()
-        logger.info("Redis connection established")
+        try:
+            await redis_manager.connect()
+            logger.info("Redis connection established")
 
-        yield
+            yield
 
-    finally:
+        finally:
+            await redis_manager.disconnect()
+            logger.info("Redis connection closed")
 
-        await redis_manager.disconnect()
-        logger.info("Redis connection closed")
-        
-        logger.info("Application shutdown completed.")
+    logger.info("Application shutdown completed.")
 
 
 def create_application() -> FastAPI:
@@ -47,7 +46,6 @@ def create_application() -> FastAPI:
         version="1.0.0",
         lifespan=lifespan,
     )
-
 
     application.add_middleware(RequestLoggingMiddleware)
     application.add_middleware(RequestIDMiddleware)

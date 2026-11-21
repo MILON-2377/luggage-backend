@@ -6,12 +6,23 @@ from getpass import getpass
 
 import app.core.database.models
 from app.cli.bootstrap.super_admin import SuperAdminBootstrapService
+from app.core.config import settings
 from app.core.database.session import AsyncSessionLocal
 from app.core.database.unit_of_work import UnitOfWork
 from app.core.generators.uuid_generator import UUIDGenerator
 from app.integrations.security.argon2_password_hasher import Argon2PasswordHasher
+from app.integrations.security.sha256_token_hasher import SHA256TokenHasher
 from app.modules.authentication.repositories.registry import (
     register_authentication_repositories,
+)
+from app.modules.notification.dependencies.email_outbox import (
+    get_email_outbox_service,
+)
+from app.modules.notification.dependencies.email_renderer import (
+    get_email_renderer,
+)
+from app.modules.notification.repositories.registry import (
+    register_notification_repositories,
 )
 
 logger = logging.getLogger(__name__)
@@ -65,11 +76,16 @@ async def bootstrap_super_admin(
     async with AsyncSessionLocal() as session:
         async with UnitOfWork(session) as uow:
             register_authentication_repositories(uow)
+            register_notification_repositories(uow)
 
             service = SuperAdminBootstrapService(
                 uow=uow,
                 id_generator=UUIDGenerator(),
                 password_hasher=Argon2PasswordHasher(),
+                token_hasher=SHA256TokenHasher(),
+                email_outbox_service=get_email_outbox_service(uow),
+                email_renderer=get_email_renderer(),
+                settings=settings,
             )
 
             result = await service.create_super_admin(
@@ -84,6 +100,8 @@ async def bootstrap_super_admin(
     print("\nSuper Admin created successfully.")
     print(f"User ID: {result.admin_user_id}")
     print(f"Email: {result.email}")
+    print("\nInitial MFA setup email queued successfully.")
+    print("The setup token is not displayed in the terminal.")
 
 
 def main() -> None:

@@ -9,6 +9,7 @@ class RateLimitPolicyName(StrEnum):
     AUTHENTICATION = "authentication"
     INQUIRY_SUBMISSION = "inquiry_submission"
     PAYMENT = "payment"
+    INITIAL_MFA_SETUP = "initial_mfa_setup"
 
 
 class RedisFailureMode(StrEnum):
@@ -54,6 +55,12 @@ RATE_LIMIT_POLICIES: dict[RateLimitPolicyName, RateLimitPolicy] = {
         name=RateLimitPolicyName.PAYMENT,
         capacity=10,
         refill_rate=1 / 30,
+        redis_failure_mode=RedisFailureMode.FAIL_CLOSED,
+    ),
+    RateLimitPolicyName.INITIAL_MFA_SETUP: RateLimitPolicy(
+        name=RateLimitPolicyName.INITIAL_MFA_SETUP,
+        capacity=5,
+        refill_rate=1 / 60,
         redis_failure_mode=RedisFailureMode.FAIL_CLOSED,
     ),
 }

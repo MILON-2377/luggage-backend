@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Literal
 
 from pydantic import Field, SecretStr
@@ -66,6 +67,28 @@ class Settings(BaseSettings):
     # Authentication
     FRONTEND_BASE_URL: str
     INVITATION_ACCEPTANCE_PATH: str = "/accept-invitation"
+
+    # Initial MFA enrollment
+    MFA_ENROLLMENT_SESSION_TTL: timedelta = Field(
+        default=timedelta(minutes=10),
+    )
+    MFA_ENROLLMENT_MAX_ATTEMPTS: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+    )
+
+    # Email worker
+    EMAIL_WORKER_RECOVERY_INTERVAL_SECONDS: float = Field(
+        default=60.0,
+        gt=0,
+        le=3600,
+    )
+    EMAIL_WORKER_BATCH_SIZE: int = Field(
+        default=20,
+        ge=1,
+        le=100,
+    )
 
 
 settings = Settings()

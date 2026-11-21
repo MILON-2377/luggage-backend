@@ -43,10 +43,10 @@ class EmailOutboxService(AbstractEmailOutboxService):
     def __init__(
         self,
         uow: AbstractUnitOfWork,
-        email_provider: AbstractEmailProvider,
         secret_encryptor: SecretEncryptor,
         id_generator: AbstractIDGenerator,
         settings: Settings,
+        email_provider: AbstractEmailProvider | None = None,
     ) -> None:
         self.uow = uow
         self.email_provider = email_provider
@@ -87,6 +87,15 @@ class EmailOutboxService(AbstractEmailOutboxService):
         *,
         limit: int = 20,
     ) -> list[EmailDeliveryResultDTO]:
+
+        if self.email_provider is None:
+            raise RuntimeError(
+                "An email provider is required to process the email outbox."
+            )
+
+        if limit <= 0:
+            raise ValueError("Batch limit must be greater than zero.")
+
         if limit <= 0:
             raise ValueError("Batch limit must be greater than zero.")
 
@@ -175,7 +184,11 @@ class EmailOutboxService(AbstractEmailOutboxService):
 
         try:
             if exhausted:
-                updated = await repository.mark_failed(item.id, error)
+                updated = await repository.mark_failed(
+                    item.id,
+                    error,
+                    failed_at=now,
+                )
                 status = EmailOutboxStatus.FAILED
             else:
                 updated = await repository.mark_retry(
