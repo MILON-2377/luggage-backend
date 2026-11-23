@@ -6,6 +6,11 @@ from app.modules.authentication.errors.invitation import (
     InvitationExpiredError,
     InvitationNotFoundError,
 )
+from app.modules.authentication.errors.login import (
+    AccountLockedError,
+    AccountNotEligibleForLoginError,
+    InvalidLoginCredentialsError,
+)
 
 __all__ = [
     "AccountNotEligibleForInvitationError",
@@ -14,4 +19,7 @@ __all__ = [
     "InvitationAttemptsExceededError",
     "InvitationExpiredError",
     "InvitationNotFoundError",
+    "InvalidLoginCredentialsError",
+    "AccountLockedError",
+    "AccountNotEligibleForLoginError",
 ]

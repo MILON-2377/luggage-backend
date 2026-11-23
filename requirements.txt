@@ -41,3 +41,9 @@ pytest-asyncio
 
 # JinJa2
 jinja2
+
+asgi-lifespan
+
+jose
+
+python-jose[cryptography]

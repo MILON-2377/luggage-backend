@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime
 
 from app.core.config import Settings
@@ -31,6 +32,7 @@ from app.modules.authentication.errors.totp_enrollment import (
 )
 from app.modules.authentication.models import AdminTotpCredential
 
+logger = logging.getLogger(__name__)
 
 class InitialTOTPEnrollmentService(AbstractInitialTOTPEnrollmentService):
     def __init__(
@@ -71,21 +73,47 @@ class InitialTOTPEnrollmentService(AbstractInitialTOTPEnrollmentService):
         )
 
         if challenge is None:
+            logger.warning("MFA enrollment failed: challenge not found")
             raise InvalidMFAEnrollmentSessionError()
 
         if challenge.consumed_at is not None:
+            logger.warning(
+                    "MFA enrollment failed: challenge already consumed "
+                    "challenge_id=%s consumed_at=%s",
+                    challenge.id,
+                    challenge.consumed_at,
+                )
             raise ConsumedMFAEnrollmentSessionError()
 
         if challenge.expires_at <= now:
+            logger.warning(
+        "MFA enrollment failed: challenge expired "
+        "challenge_id=%s expires_at=%s",
+        challenge.id,
+        challenge.expires_at,
+    )
             raise ExpiredMFAEnrollmentSessionError()
 
         if challenge.failed_attempts >= challenge.max_attempts:
+            logger.warning(
+        "MFA enrollment failed: challenge locked "
+        "challenge_id=%s failed_attempts=%s max_attempts=%s",
+        challenge.id,
+        challenge.failed_attempts,
+        challenge.max_attempts,
+    )
             raise LockedMFAEnrollmentSessionError()
 
         if (
             not challenge.challenge_data
             or challenge.challenge_data.get("purpose") != "initial_mfa_enrollment"
         ):
+            logger.warning(
+        "MFA enrollment failed: invalid challenge purpose "
+        "challenge_id=%s purpose=%s",
+        challenge.id,
+        (challenge.challenge_data or {}).get("purpose"),
+    )
             raise InvalidMFAEnrollmentSessionError()
 
         admin_user = await admin_user_repository.get_by_id(
@@ -94,9 +122,21 @@ class InitialTOTPEnrollmentService(AbstractInitialTOTPEnrollmentService):
         )
 
         if admin_user is None:
+            logger.warning(
+        "MFA enrollment failed: administrator not found "
+        "challenge_id=%s",
+        challenge.id,
+    )
             raise InvalidMFAEnrollmentSessionError()
 
         if admin_user.status != AdminUserStatus.PENDING_MFA_SETUP:
+            logger.warning(
+        "MFA enrollment failed: administrator status mismatch "
+        "admin_user_id=%s status=%s expected=%s",
+        admin_user.id,
+        admin_user.status,
+        AdminUserStatus.PENDING_MFA_SETUP,
+    )
             raise MFAEnrollmentAccountNotEligibleError()
 
         credential = await credential_repository.get_unrevoked_by_admin_user_id(
@@ -105,6 +145,13 @@ class InitialTOTPEnrollmentService(AbstractInitialTOTPEnrollmentService):
         )
 
         if credential is not None and credential.verified_at is not None:
+            logger.warning(
+        "MFA enrollment failed: TOTP already verified "
+        "admin_user_id=%s credential_id=%s verified_at=%s",
+        admin_user.id,
+        credential.id,
+        credential.verified_at,
+    )
             raise TOTPAlreadyVerifiedError()
 
         secret = self.totp_provider.generate_secret()

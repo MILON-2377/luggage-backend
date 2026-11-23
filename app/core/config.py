@@ -68,6 +68,25 @@ class Settings(BaseSettings):
     FRONTEND_BASE_URL: str
     INVITATION_ACCEPTANCE_PATH: str = "/accept-invitation"
 
+        # Authentication session
+    AUTH_SESSION_EXPIRE_DAYS: int = Field(default=7, gt=0, le=90)
+
+    # Refresh token
+    REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7, gt=0, le=90)
+
+    # Authentication cookies
+    ACCESS_TOKEN_COOKIE_NAME: str = "__Host-access_token"
+    REFRESH_TOKEN_COOKIE_NAME: str = "__Host-refresh_token"
+
+    AUTH_COOKIE_HTTPONLY: bool = True
+    AUTH_COOKIE_SECURE: bool = True
+    AUTH_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+    AUTH_COOKIE_PATH: str = "/"
+
+    # Login
+    ADMIN_LOGIN_MAX_FAILED_ATTEMPTS: int = Field(default=5, ge=1, le=20)
+    ADMIN_LOGIN_LOCKOUT_MINUTES: int = Field(default=15, ge=1, le=1440)
+
     # Initial MFA enrollment
     MFA_ENROLLMENT_SESSION_TTL: timedelta = Field(
         default=timedelta(minutes=10),

@@ -37,3 +37,13 @@ class AbstractAuthRecoveryCodeRepository(AbstractRepository):
         revoked_at: datetime,
     ) -> int:
         raise NotImplementedError
+
+
+    @abstractmethod
+    async def consume(
+        self,
+        admin_user_id: uuid.UUID,
+        code_hash: str,
+        used_at: datetime,
+    ) -> bool:
+        raise NotImplementedError
