@@ -12,6 +12,7 @@ from app.api.v1.admin.routes.authentication.initial_totp_verification import (
 )
 from app.api.v1.admin.routes.authentication.login import router as login_router
 from app.api.v1.admin.routes.authentication.logout import router as logout_router
+from app.api.v1.admin.routes.authentication.me import router as me_router
 from app.api.v1.admin.routes.authentication.passkey_login import (
     router as passkey_login_router,
 )
@@ -27,6 +28,7 @@ from app.api.v1.admin.routes.authentication.passkey_registration_verify import (
 from app.api.v1.admin.routes.authentication.recovery_code_login_verify import (
     router as recovery_code_login_verify_router,
 )
+from app.api.v1.admin.routes.authentication.refresh import router as refresh_router
 from app.api.v1.admin.routes.authentication.totp_login_verify import (
     router as totp_login_verify_router,
 )
@@ -48,3 +50,5 @@ router.include_router(recovery_code_login_verify_router)
 router.include_router(passkey_registration_options_router)
 router.include_router(passkey_registration_verify_router)
 router.include_router(logout_router)
+router.include_router(me_router)
+router.include_router(refresh_router)

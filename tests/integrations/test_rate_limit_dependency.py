@@ -40,9 +40,7 @@ def create_request(
     headers = []
 
     if forwarded_for is not None:
-        headers.append(
-            (b"x-forwarded-for", forwarded_for.encode("ascii"))
-        )
+        headers.append((b"x-forwarded-for", forwarded_for.encode("ascii")))
 
     return Request(
         {
@@ -72,10 +70,7 @@ async def test_rate_limit_enforces_authentication_policy(rate_limit_storage):
         await dependency(request, response)
         responses.append(response)
 
-    assert all(
-        response.headers["X-RateLimit-Limit"] == "5"
-        for response in responses
-    )
+    assert all(response.headers["X-RateLimit-Limit"] == "5" for response in responses)
 
     with pytest.raises(HTTPException) as exc_info:
         await dependency(request, Response())
@@ -100,9 +95,7 @@ async def test_concurrent_requests_cannot_exceed_bucket_capacity(
                 return False
             raise
 
-    results = await asyncio.gather(
-        *(make_request() for _ in range(20))
-    )
+    results = await asyncio.gather(*(make_request() for _ in range(20)))
 
     assert sum(results) == 5
     assert results.count(False) == 15
@@ -130,3 +123,72 @@ async def test_untrusted_forwarded_header_cannot_bypass_rate_limit(
         await dependency(spoofed_request, Response())
 
     assert exc_info.value.status_code == 429
+
+
+def test_authenticated_users_have_independent_rate_limit_identities():
+    user_a = uuid4()
+    user_b = uuid4()
+
+    request_a = create_request(client_ip="203.0.113.20")
+    request_b = create_request(client_ip="203.0.113.20")
+
+    request_a.state.authenticated_user_id = user_a
+    request_b.state.authenticated_user_id = user_b
+
+    identity_a = dependencies._get_rate_limit_identity(
+        request_a,
+        RateLimitPolicyName.AUTHENTICATED_API,
+    )
+    identity_b = dependencies._get_rate_limit_identity(
+        request_b,
+        RateLimitPolicyName.AUTHENTICATED_API,
+    )
+
+    assert identity_a == f"user:{user_a}"
+    assert identity_b == f"user:{user_b}"
+    assert identity_a != identity_b
+
+
+def test_same_authenticated_user_shares_bucket_across_ip_addresses():
+    user_id = uuid4()
+
+    request_a = create_request(client_ip="203.0.113.21")
+    request_b = create_request(client_ip="203.0.113.22")
+
+    request_a.state.authenticated_user_id = user_id
+    request_b.state.authenticated_user_id = user_id
+
+    identity_a = dependencies._get_rate_limit_identity(
+        request_a,
+        RateLimitPolicyName.AUTHENTICATED_API,
+    )
+    identity_b = dependencies._get_rate_limit_identity(
+        request_b,
+        RateLimitPolicyName.AUTHENTICATED_API,
+    )
+
+    assert identity_a == identity_b == f"user:{user_id}"
+
+
+def test_unauthenticated_authenticated_api_request_uses_ip():
+    request = create_request(client_ip="203.0.113.23")
+
+    identity = dependencies._get_rate_limit_identity(
+        request,
+        RateLimitPolicyName.AUTHENTICATED_API,
+    )
+
+    assert identity == "ip:203.0.113.23"
+
+
+def test_other_policies_always_use_ip_identity():
+    user_id = uuid4()
+    request = create_request(client_ip="203.0.113.24")
+    request.state.authenticated_user_id = user_id
+
+    identity = dependencies._get_rate_limit_identity(
+        request,
+        RateLimitPolicyName.AUTHENTICATION,
+    )
+
+    assert identity == "ip:203.0.113.24"

@@ -1,5 +1,6 @@
 import math
 from collections.abc import Callable
+from uuid import UUID
 
 from fastapi import HTTPException, Request, Response, status
 
@@ -13,6 +14,7 @@ from app.integrations.redis.rate_limit_storage import RedisRateLimitStorage
 from app.integrations.redis.token_bucket_executor import RedisTokenBucketExecutor
 
 _storage = RedisRateLimitStorage(RedisTokenBucketExecutor(redis_manager))
+
 
 def _build_rate_limit_headers(
     *,
@@ -35,6 +37,23 @@ def _build_rate_limit_headers(
     return headers
 
 
+def _get_rate_limit_identity(
+    request: Request,
+    policy_name: RateLimitPolicyName,
+) -> str:
+    if policy_name == RateLimitPolicyName.AUTHENTICATED_API:
+        user_id = getattr(
+            request.state,
+            "authenticated_user_id",
+            None,
+        )
+
+        if isinstance(user_id, UUID):
+            return f"user:{user_id}"
+
+    return f"ip:{get_client_ip(request)}"
+
+
 def rate_limit(
     policy_name: RateLimitPolicyName,
     *,
@@ -51,8 +70,8 @@ def rate_limit(
         request: Request,
         response: Response,
     ) -> None:
-        client_ip = get_client_ip(request)
-        key = f"{policy.name.value}:{client_ip}"
+        identity = _get_rate_limit_identity(request, policy_name)
+        key = f"{policy.name.value}:{identity}"
 
         decision = await _storage.consume(
             key=key,

@@ -37,7 +37,6 @@ class AbstractAdminUserRepository(AbstractRepository):
     async def has_super_admin(self) -> bool:
         raise NotImplementedError
 
-
     @abstractmethod
     async def record_failed_login(
         self,
@@ -53,4 +52,11 @@ class AbstractAdminUserRepository(AbstractRepository):
         self,
         admin_user_id: uuid.UUID,
     ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_by_id_with_profile(
+        self,
+        admin_user_id: uuid.UUID,
+    ) -> AdminUser | None:
         raise NotImplementedError

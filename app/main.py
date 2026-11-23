@@ -10,6 +10,7 @@ from app.api.router import api_router
 from app.core.config import settings
 from app.core.errors.error_handlers import register_error_handlers
 from app.core.logging.config import setup_logging
+from app.core.middleware.authentication import AuthenticationMiddleware
 from app.core.middleware.request_id import RequestIDMiddleware
 from app.core.middleware.request_logging import RequestLoggingMiddleware
 from app.integrations.redis.client import redis_manager
@@ -49,6 +50,7 @@ def create_application() -> FastAPI:
 
     application.add_middleware(RequestLoggingMiddleware)
     application.add_middleware(RequestIDMiddleware)
+    application.add_middleware(AuthenticationMiddleware)
 
     register_error_handlers(application=application)
 

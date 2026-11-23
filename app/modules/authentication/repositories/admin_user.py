@@ -13,6 +13,7 @@ from sqlalchemy import (
     text,
     update,
 )
+from sqlalchemy.orm import joinedload
 
 from app.core.constants.security import SUPER_ADMIN_BOOTSTRAP_LOCK_KEY
 from app.core.database.repositories.base import BaseRepository
@@ -153,3 +154,19 @@ class AdminUserRepository(
         )
 
         await self.session.execute(statement)
+
+    async def get_by_id_with_profile(
+        self,
+        admin_user_id: uuid.UUID,
+    ) -> AdminUser | None:
+        statement = (
+            select(AdminUser)
+            .options(joinedload(AdminUser.profile))
+            .where(
+                AdminUser.id == admin_user_id,
+                AdminUser.deleted_at.is_(None),
+            )
+        )
+
+        result = await self.session.execute(statement)
+        return result.unique().scalar_one_or_none()

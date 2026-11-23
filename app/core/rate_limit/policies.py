@@ -7,6 +7,7 @@ from app.core.errors.base import InternalError
 class RateLimitPolicyName(StrEnum):
     PUBLIC_API = "public_api"
     AUTHENTICATION = "authentication"
+    AUTHENTICATED_API = "authenticated_api"
     INQUIRY_SUBMISSION = "inquiry_submission"
     PAYMENT = "payment"
     INITIAL_MFA_SETUP = "initial_mfa_setup"
@@ -61,6 +62,12 @@ RATE_LIMIT_POLICIES: dict[RateLimitPolicyName, RateLimitPolicy] = {
         name=RateLimitPolicyName.INITIAL_MFA_SETUP,
         capacity=5,
         refill_rate=1 / 60,
+        redis_failure_mode=RedisFailureMode.FAIL_CLOSED,
+    ),
+    RateLimitPolicyName.AUTHENTICATED_API: RateLimitPolicy(
+        name=RateLimitPolicyName.AUTHENTICATED_API,
+        capacity=60,
+        refill_rate=1.0,
         redis_failure_mode=RedisFailureMode.FAIL_CLOSED,
     ),
 }
