@@ -1,5 +1,4 @@
 import uuid
-from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint,
@@ -19,12 +18,10 @@ from app.core.database.mixins import (
     TimestampMixin,
     UUIDPrimaryKeyMixin,
 )
+from app.modules.authentication.models.admin_user import AdminUser
+from app.modules.authentication.models.admin_user_profile import AdminUserProfile
 from app.modules.media.enums import MediaStatus, MediaType
-
-if TYPE_CHECKING:
-    from app.modules.authentication.models.admin_user import AdminUser
-    from app.modules.authentication.models.admin_user_profile import AdminUserProfile
-    from app.modules.media.models.media_file import MediaFile
+from app.modules.media.models.media_file import MediaFile
 
 
 class MediaAsset(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):

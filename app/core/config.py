@@ -4,6 +4,8 @@ from typing import Literal
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.modules.media.enums import StorageProvider
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -64,11 +66,24 @@ class Settings(BaseSettings):
     INVITATION_EXPIRE_HOURS: int = Field(default=24, ge=1, le=24 * 14)
     INVITATION_MAX_ATTEMPTS: int = Field(default=5, ge=1, le=20)
 
+    # Password reset
+    PASSWORD_RESET_PATH: str = "/reset-password"
+    PASSWORD_RESET_EXPIRE_MINUTES: int = Field(
+        default=15,
+        ge=5,
+        le=60,
+    )
+    PASSWORD_RESET_MAX_ATTEMPTS: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+    )
+
     # Authentication
     FRONTEND_BASE_URL: str
     INVITATION_ACCEPTANCE_PATH: str = "/accept-invitation"
 
-        # Authentication session
+    # Authentication session
     AUTH_SESSION_EXPIRE_DAYS: int = Field(default=7, gt=0, le=90)
 
     # Refresh token
@@ -108,6 +123,19 @@ class Settings(BaseSettings):
         ge=1,
         le=100,
     )
+
+    # Media
+    MEDIA_UPLOAD_EXPIRES_SECONDS: int = 900
+    MEDIA_PROVIDER: StorageProvider = StorageProvider.CLOUDINARY
+    MEDIA_PENDING_UPLOAD_TTL_SECONDS: int = 86400
+    MEDIA_DELETION_RETRY_AFTER_SECONDS: int = 300
+    MEDIA_CLEANUP_BATCH_SIZE: int = 100
+
+    # Cloudinary
+    CLOUDINARY_CLOUD_NAME: str
+    CLOUDINARY_API_KEY: str
+    CLOUDINARY_API_SECRET: SecretStr
+    CLOUDINARY_UPLOAD_PRESET: str
 
 
 settings = Settings()
