@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -7,11 +9,18 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, validates
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.core.database.base import Base
 from app.core.database.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 from app.modules.catalog.enums import AttributeDataType
+
+if TYPE_CHECKING:
+    from app.modules.catalog.models.category_attribute import CategoryAttribute
+    from app.modules.catalog.models.product_attribute_option import (
+        ProductAttributeOption,
+    )
+    from app.modules.catalog.models.product_attribute_value import ProductAttributeValue
 
 
 class ProductAttribute(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -55,6 +64,26 @@ class ProductAttribute(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         default=False,
         server_default=text("false"),
         nullable=False,
+    )
+
+    category_attributes: Mapped[list["CategoryAttribute"]] = relationship(
+        "CategoryAttribute",
+        back_populates="attribute",
+        lazy="raise",
+        cascade="all, delete-orphan",
+    )
+
+    product_values: Mapped[list["ProductAttributeValue"]] = relationship(
+        "ProductAttributeValue",
+        back_populates="attribute",
+        lazy="raise",
+    )
+
+    options: Mapped[list["ProductAttributeOption"]] = relationship(
+        "ProductAttributeOption",
+        back_populates="attribute",
+        lazy="raise",
+        cascade="all, delete-orphan",
     )
 
     __table_args__ = (

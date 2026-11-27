@@ -1,4 +1,5 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint,
@@ -19,7 +20,13 @@ from app.core.database.mixins import (
     TimestampMixin,
     UUIDPrimaryKeyMixin,
 )
-from app.core.enums.record_status import RecordStatus
+from app.modules.catalog.enums import ProductCategoryStatus
+from app.modules.catalog.models.category_attribute import CategoryAttribute
+from app.modules.catalog.models.category_media import CategoryMedia
+
+if TYPE_CHECKING:
+    from app.modules.catalog.models.category_attribute import CategoryAttribute
+    from app.modules.catalog.models.category_media import CategoryMedia
 
 
 class ProductCategory(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
@@ -57,17 +64,17 @@ class ProductCategory(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base
         nullable=False,
     )
 
-    status: Mapped[RecordStatus] = mapped_column(
+    status: Mapped[ProductCategoryStatus] = mapped_column(
         Enum(
-            RecordStatus,
-            name="record_status",
+            ProductCategoryStatus,
+            name="product_category_status",
             values_callable=lambda enum: [item.value for item in enum],
             native_enum=False,
             length=20,
             create_constraint=True,
             validate_strings=True,
         ),
-        default=RecordStatus.DRAFT,
+        default=ProductCategoryStatus.DRAFT,
         server_default=text("'draft'"),
         nullable=False,
     )
@@ -83,6 +90,19 @@ class ProductCategory(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base
         "ProductCategory",
         back_populates="parent",
         lazy="raise",
+    )
+
+    category_attributes: Mapped[list["CategoryAttribute"]] = relationship(
+        "CategoryAttribute",
+        back_populates="category",
+        lazy="raise",
+        cascade="all, delete-orphan",
+    )
+    category_media: Mapped[list["CategoryMedia"]] = relationship(
+        "CategoryMedia",
+        back_populates="category",
+        lazy="raise",
+        cascade="all, delete-orphan",
     )
 
     __table_args__ = (

@@ -19,9 +19,9 @@ router = APIRouter()
     "/{media_asset_id}/confirm",
     response_model=ConfirmUploadResponse,
     status_code=status.HTTP_200_OK,
-    # dependencies=[
-    #     Depends(rate_limit(RateLimitPolicyName.AUTHENTICATED_API)),
-    # ],
+    dependencies=[
+        Depends(rate_limit(RateLimitPolicyName.AUTHENTICATED_API)),
+    ],
 )
 async def confirm_upload(
     media_asset_id: uuid.UUID,

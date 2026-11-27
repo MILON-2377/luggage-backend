@@ -163,3 +163,22 @@ class MediaAssetRepository(
 
         result = await self.session.execute(statement)
         return list(result.scalars().all())
+
+    async def get_by_ids(
+        self,
+        media_asset_ids: list[uuid.UUID],
+        *,
+        include_deleted: bool = False,
+    ) -> list[MediaAsset]:
+        if not media_asset_ids:
+            return []
+
+        statement = select(MediaAsset).where(
+            MediaAsset.id.in_(media_asset_ids),
+        )
+
+        if not include_deleted:
+            statement = statement.where(MediaAsset.deleted_at.is_(None))
+
+        result = await self.session.execute(statement)
+        return list(result.scalars().all())

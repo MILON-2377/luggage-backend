@@ -20,6 +20,12 @@ from app.core.database.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 if TYPE_CHECKING:
     from app.modules.catalog.models.product import Product
     from app.modules.catalog.models.product_attribute import ProductAttribute
+    from app.modules.catalog.models.product_attribute_option import (
+        ProductAttributeOption,
+    )
+    from app.modules.catalog.models.product_attribute_value_option import (
+        ProductAttributeValueOption,
+    )
 
 
 class ProductAttributeValue(UUIDPrimaryKeyMixin, TimestampMixin, Base):
@@ -84,6 +90,28 @@ class ProductAttributeValue(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         "ProductAttribute",
         back_populates="product_values",
         lazy="raise",
+    )
+
+    option_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey(
+            "product_attribute_options.id",
+            ondelete="RESTRICT",
+            name="fk_product_attribute_values_option_id",
+        ),
+        nullable=True,
+    )
+
+    option: Mapped["ProductAttributeOption | None"] = relationship(
+        "ProductAttributeOption",
+        lazy="raise",
+    )
+
+    selected_options: Mapped[list["ProductAttributeValueOption"]] = relationship(
+        "ProductAttributeValueOption",
+        back_populates="product_attribute_value",
+        lazy="raise",
+        cascade="all, delete-orphan",
     )
 
     __table_args__ = (

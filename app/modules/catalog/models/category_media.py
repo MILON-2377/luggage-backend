@@ -1,4 +1,5 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     CheckConstraint,
@@ -14,8 +15,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from app.core.database.base import Base
 from app.core.database.mixins import UUIDPrimaryKeyMixin
 from app.modules.catalog.enums import CategoryMediaRole
-from app.modules.catalog.models.product_category import ProductCategory
 from app.modules.media.models.media_asset import MediaAsset
+
+if TYPE_CHECKING:
+    from app.modules.catalog.models.product_category import ProductCategory
 
 
 class CategoryMedia(UUIDPrimaryKeyMixin, Base):
@@ -63,6 +66,7 @@ class CategoryMedia(UUIDPrimaryKeyMixin, Base):
 
     category: Mapped["ProductCategory"] = relationship(
         "ProductCategory",
+        back_populates="category_media",
         lazy="raise",
     )
 

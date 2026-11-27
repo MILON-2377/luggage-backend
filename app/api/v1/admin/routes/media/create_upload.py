@@ -22,9 +22,9 @@ router = APIRouter()
     "/uploads",
     response_model=CreateUploadResponse,
     status_code=status.HTTP_201_CREATED,
-    # dependencies=[
-    #     Depends(rate_limit(RateLimitPolicyName.AUTHENTICATED_API)),
-    # ],
+    dependencies=[
+        Depends(rate_limit(RateLimitPolicyName.AUTHENTICATED_API)),
+    ],
 )
 async def create_upload(
     payload: CreateUploadRequest,

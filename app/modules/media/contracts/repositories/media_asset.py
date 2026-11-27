@@ -23,6 +23,12 @@ class AbstractMediaAssetRepository(AbstractRepository):
         raise NotImplementedError
 
     @abstractmethod
+    async def get_by_ids(
+        self, media_asset_ids: list[uuid.UUID], *, include_deleted: bool = False
+    ) -> list[MediaAsset]:
+        raise NotImplementedError
+
+    @abstractmethod
     async def get_by_id_with_files(
         self,
         media_asset_id: uuid.UUID,

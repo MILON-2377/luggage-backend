@@ -17,9 +17,9 @@ router = APIRouter()
 @router.delete(
     "/{media_asset_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    # dependencies=[
-    #     Depends(rate_limit(RateLimitPolicyName.AUTHENTICATED_API)),
-    # ],
+    dependencies=[
+        Depends(rate_limit(RateLimitPolicyName.AUTHENTICATED_API)),
+    ],
 )
 async def delete_media(
     media_asset_id: uuid.UUID,

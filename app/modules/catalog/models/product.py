@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -25,7 +26,16 @@ from app.core.database.mixins import (
     UUIDPrimaryKeyMixin,
 )
 from app.core.enums.record_status import RecordStatus
+from app.modules.catalog.models.product_attribute_value import ProductAttributeValue
 from app.modules.catalog.models.product_category import ProductCategory
+from app.modules.catalog.models.product_media import ProductMedia
+from app.modules.catalog.models.product_variant import ProductVariant
+
+if TYPE_CHECKING:
+    from app.modules.catalog.models.product_attribute_value import ProductAttributeValue
+    from app.modules.catalog.models.product_category import ProductCategory
+    from app.modules.catalog.models.product_media import ProductMedia
+    from app.modules.catalog.models.product_variant import ProductVariant
 
 
 class Product(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
@@ -140,6 +150,27 @@ class Product(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     category: Mapped["ProductCategory"] = relationship(
         "ProductCategory",
         lazy="raise",
+    )
+
+    media: Mapped[list["ProductMedia"]] = relationship(
+        "ProductMedia",
+        back_populates="product",
+        lazy="raise",
+        cascade="all, delete-orphan",
+    )
+
+    variants: Mapped[list["ProductVariant"]] = relationship(
+        "ProductVariant",
+        back_populates="product",
+        lazy="raise",
+        cascade="all, delete-orphan",
+    )
+
+    attribute_values: Mapped[list["ProductAttributeValue"]] = relationship(
+        "ProductAttributeValue",
+        back_populates="product",
+        lazy="raise",
+        cascade="all, delete-orphan",
     )
 
     __table_args__ = (
